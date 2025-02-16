@@ -1,0 +1,26 @@
+<div>
+  <button class="button" (click)="nextPage()">Вперёд</button>
+  <button class="button" (click)="previousPage()">Назад</button>
+</div>
+
+<div class="todo-list">
+  <!--  @if(todos$ | async; as todos) {-->
+  @for (todo of todos$ | async; track todo.id) {
+    <app-todo [todo]="todo"></app-todo>
+  }
+  <!--  }-->
+</div>
+
+
+<hr>
+<div class="todo-list">
+  @for (todo of todosArray$ | async; track todo.id) {
+    <app-todo [todo]="todo"></app-todo>
+  }
+</div>
+<hr>
+<div class="todo-list">
+  @for (todo of todosArray2$ | async; track todo.id) {
+    <app-todo [todo]="todo"></app-todo>
+  }
+</div>
