@@ -1,14 +1,7 @@
-import { Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Todo, TodoService } from '../../services/todo.service';
-import {
-  BehaviorSubject,
-  Observable,
-  of,
-  Subscription,
-  switchMap,
-  tap,
-} from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Observable, of, switchMap } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-todos',
@@ -16,30 +9,36 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   templateUrl: './todos.component.html',
   styleUrl: './todos.component.css',
 })
-export class TodosComponent {
-  private todosArraySubject: BehaviorSubject<Todo[]> = new BehaviorSubject<
-    Todo[]
-  >([]);
+export class TodosComponent implements OnInit {
+  @Input() page$: Observable<number> = of(1);
+  @Input() page: number | null = 1;
 
-  private pageSubject: BehaviorSubject<number> = new BehaviorSubject<number>(1);
-
-  public todosArray$: Observable<Todo[]> =
-    this.todosArraySubject.asObservable();
-
-  public todosArray2$: Observable<Todo[]> = this.pageSubject.pipe(
-    switchMap((pageNumber) => this.todoService.getTodos(pageNumber)),
-  );
+  public todos$: Observable<Todo[]> = of([]);
 
   constructor(
     private todoService: TodoService,
-    private destroyRef: DestroyRef,
+    private router: Router,
   ) {}
 
+  ngOnInit() {
+    this.setTodos();
+  }
+
   public nextPage(): void {
-    this.pageSubject.next(this.pageSubject.value + 1);
+    void this.router.navigate([], {
+      queryParams: { page: (this.page ?? 1) + 1 },
+    });
   }
 
   public previousPage(): void {
-    this.pageSubject.next(this.pageSubject.value - 1);
+    void this.router.navigate([], {
+      queryParams: { page: (this.page ?? 1) - 1 },
+    });
+  }
+
+  private setTodos(): void {
+    this.todos$ = this.page$.pipe(
+      switchMap((pageNumber) => this.todoService.getTodos(pageNumber)),
+    );
   }
 }
